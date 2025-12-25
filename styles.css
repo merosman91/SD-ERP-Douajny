@@ -1,17 +1,33 @@
-body { font-family: 'Tajawal', sans-serif; transition: background-color 0.3s, color 0.3s; }
+body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #d1d5db; transition: background 0.3s; }
 .dark body { background-color: #0f172a; }
 
-.screen { display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding-bottom: 100px; }
+.screen { display: none; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding-bottom: 80px; }
 .screen.active { display: block; }
 
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.nav-bar { box-shadow: 0 -5px 20px -5px rgba(0, 0, 0, 0.05); backdrop-filter: blur(10px); }
+.nav-bar { box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1); }
+
+/* Custom Inputs */
+input, select, textarea { 
+    background-color: #1e293b; 
+    color: white; 
+    border: 1px solid #374151; 
+}
+input:focus, select:focus, textarea:focus { 
+    outline: none; 
+    border-color: #10b981; 
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); 
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-.dark ::-webkit-scrollbar-thumb { background: #475569; }
+::-webkit-scrollbar-track { background: #1e293b; }
+::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 
-/* Custom Range Slider & Inputs */
-input:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2); border-color: #0f766e; }
+/* Cards */
+.card { background-color: #1e293b; border: 1px solid #374151; border-radius: 0.75rem; }
+.card-header { border-bottom: 1px solid #374151; }
+
+/* Modals */
+.modal-overlay { background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
