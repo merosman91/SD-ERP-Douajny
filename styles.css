@@ -1,0 +1,17 @@
+body { font-family: 'Tajawal', sans-serif; transition: background-color 0.3s, color 0.3s; }
+.dark body { background-color: #0f172a; }
+
+.screen { display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding-bottom: 100px; }
+.screen.active { display: block; }
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.nav-bar { box-shadow: 0 -5px 20px -5px rgba(0, 0, 0, 0.05); backdrop-filter: blur(10px); }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+/* Custom Range Slider & Inputs */
+input:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2); border-color: #0f766e; }
