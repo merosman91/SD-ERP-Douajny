@@ -1,11 +1,11 @@
 /**
- * ERP Database v6.0 - Fixed Index Names
- * Ensures 'cycleId' matches between App.js and DB
+ * ERP Database v6.0 - Safety Rebuild Mode
+ * Forces deletion of corrupt tables and recreates them with correct indexes.
  */
 class PoultryDB {
     constructor() {
         this.dbName = 'Dawajni_SingleFarm';
-        this.version = 6; // Increased to 5 to force schema rebuild
+        this.version = 6; // تم الرفع إلى 6 لفرض الحذف وإعادة البناء
         this.db = null;
     }
 
@@ -15,47 +15,49 @@ class PoultryDB {
 
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
+                const tx = event.transaction; // Available for version change
 
-                // 1. Current Cycle Store
-                if (!db.objectStoreNames.contains('current_cycle')) {
-                    const store = db.createObjectStore('current_cycle', { keyPath: 'id', autoIncrement: true });
-                    store.createIndex('status', 'status', { unique: false });
-                }
+                console.log(`[DB] Upgrading from ${event.oldVersion} to 6`);
 
-                // 2. Inventory Store
+                // 1. CLEAN UP (Destructive but safe for this case)
+                // نحذف المتاجر التي قد تكون تالفة من الإصدارات السابقة
+                if (db.objectStoreNames.contains('daily_logs')) db.deleteObjectStore('daily_logs');
+                if (db.objectStoreNames.contains('health_records')) db.deleteObjectStore('health_records');
+                if (db.objectStoreNames.contains('current_cycle')) db.deleteObjectStore('current_cycle');
+                // (لا نحذف inventory و financial لأنها لا تحتاج لمؤشر cycleId في نسختنا الحالية)
+
+                // 2. RECREATE CORRECTLY
+                // Store: Daily Logs
+                const logStore = db.createObjectStore('daily_logs', { keyPath: 'id', autoIncrement: true });
+                // إنشاء المؤشر الصحيح: 'cycleId'
+                logStore.createIndex('cycleId', 'cycleId', { unique: false });
+
+                // Store: Health Records
+                const healthStore = db.createObjectStore('health_records', { keyPath: 'id', autoIncrement: true });
+                healthStore.createIndex('cycleId', 'cycleId', { unique: false });
+
+                // Store: Current Cycle (Single Farm)
+                const cycleStore = db.createObjectStore('current_cycle', { keyPath: 'id', autoIncrement: true });
+                
+                // Stores: Inventory & Financial (No index needed in this version)
                 if (!db.objectStoreNames.contains('inventory')) db.createObjectStore('inventory', { keyPath: 'id', autoIncrement: true });
-
-                // 3. Financial Store
                 if (!db.objectStoreNames.contains('financial')) db.createObjectStore('financial', { keyPath: 'id', autoIncrement: true });
-
-                // 4. Daily Logs Store (FIXED: Index is 'cycleId')
-                if (!db.objectStoreNames.contains('daily_logs')) {
-                    const logStore = db.createObjectStore('daily_logs', { keyPath: 'id', autoIncrement: true });
-                    // Fix: Use 'cycleId' here to match app.js calls
-                    logStore.createIndex('cycleId', 'cycleId', { unique: false });
-                }
-
-                // 5. Health Records Store (FIXED: Index is 'cycleId')
-                if (!db.objectStoreNames.contains('health_records')) {
-                    const healthStore = db.createObjectStore('health_records', { keyPath: 'id', autoIncrement: true });
-                    // Fix: Use 'cycleId' here
-                    healthStore.createIndex('cycleId', 'cycleId', { unique: false });
-                }
             };
 
             request.onsuccess = (event) => {
                 this.db = event.target.result;
+                console.log("[DB] Database Opened Successfully (v6)");
                 resolve(this.db);
             };
 
             request.onerror = (event) => {
-                console.error("Database Error", event.target.errorCode);
+                console.error("[DB] Failed to open DB", event.target.errorCode);
                 reject('Database error: ' + event.target.errorCode);
             };
         });
     }
 
-    // Generic Transaction Wrapper
+    // Generic Transaction Wrapper (Safe)
     transaction(storeName, mode, callback) {
         return new Promise((resolve, reject) => {
             const tx = this.db.transaction(storeName, mode);
@@ -85,14 +87,12 @@ class PoultryDB {
             request.onerror = () => reject(request.error);
         });
     }
-
-    // --- BACKUP & RESTORE ---
+    
+    // Backup & Restore
     async exportData() {
         const stores = ['current_cycle', 'inventory', 'financial', 'health_records', 'daily_logs'];
         const data = {};
-        for (const store of stores) {
-            data[store] = await this.getAll(store);
-        }
+        for (const store of stores) { data[store] = await this.getAll(store); }
         const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -109,8 +109,6 @@ class PoultryDB {
             reader.onload = async (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    // Clear current DB (Optional, for cleaner restore)
-                    // await this.deleteAll(); 
                     for (const storeName in data) {
                         const items = data[storeName];
                         for (const item of items) {
