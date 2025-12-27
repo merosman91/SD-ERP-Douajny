@@ -5,7 +5,7 @@
 class PoultryDB {
     constructor() {
         this.dbName = 'Dawajni_SingleFarm';
-        this.version = 5; // Increased to 5 to force schema rebuild
+        this.version = 6; // Increased to 5 to force schema rebuild
         this.db = null;
     }
 
