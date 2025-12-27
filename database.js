@@ -1,5 +1,5 @@
 /**
- * ERP Database v5.0 - Fixed Index Names
+ * ERP Database v6.0 - Fixed Index Names
  * Ensures 'cycleId' matches between App.js and DB
  */
 class PoultryDB {
