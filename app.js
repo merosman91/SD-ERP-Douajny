@@ -362,4 +362,99 @@ const Views = {
                     </div>
                     <div class="bg-white dark:bg-darkcard p-4 rounded-xl shadow-sm">
                         <h4 class="font-bold mb-4 dark:text-white">تفاصيل التكلفة</h4>
-                        <table class="w-full text-sm text-right"><tr class="border-b dark:border-slate-700"><td class="py-2 text-slate-400 dark:text-white">البند</td><td class="py-2 font-bold dark:text-white">المبلغ</td></tr><tr class="border-b dark:border-s
+                        <table class="w-full text-sm text-right"><tr class="border-b dark:border-slate-700"><td class="py-2 text-slate-400 dark:text-white">البند</td><td class="py-2 font-bold dark:text-white">المبلغ</td></tr><tr class="border-b dark:border-slate-700"><td class="py-2 dark:text-white">كتاكيت</td><td class="py-2 font-bold text-red-500">${fin.chickCost.toLocaleString()}</td></tr><tr class="border-b dark:border-slate-700"><td class="py-2 dark:text-white">الأعلاف</td><td class="py-2 font-bold text-orange-500">${fin.feedCost.toLocaleString()}</td></tr><tr><td class="py-2 font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20">الإجمالي</td><td class="py-2 font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20">${fin.totalCost.toLocaleString()}</td></tr></table>
+                    </div>
+                ` : '<div class="text-center py-10 text-slate-400">لا توجد بيانات لعرضها</div>'}
+            </div>`;
+    },
+
+    renderHealth: async function(c, h) {
+        h.innerText = 'السجل الصحي';
+        const logs = await DB.getAllByIndex('health_records', 'cycleId', App.state.currentCycleId);
+        c.innerHTML = `
+            <div class="screen active space-y-4">
+                <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-2xl shadow-sm border border-red-100">
+                    <h4 class="font-bold mb-4 dark:text-white">تسجيل صحى جديد</h4>
+                    <div class="space-y-2">
+                        <div class="flex gap-2"><button onclick="Actions.setHealthType('vaccine')" id="hBtnVac" class="flex-1 py-2 bg-white dark:bg-slate-800 rounded-lg text-sm font-bold border-2 border-red-500">لقاح</button><button onclick="Actions.setHealthType('medicine')" id="hBtnMed" class="flex-1 py-2 bg-white dark:bg-slate-800 rounded-lg text-sm font-bold border-2 border-transparent">دواء</button></div>
+                        <input type="text" id="healthName" class="w-full p-2 border rounded dark:bg-slate-800 dark:text-white" placeholder="اسم اللقاح/الدواء">
+                        <input type="text" id="healthDesc" class="w-full p-2 border rounded dark:bg-slate-800 dark:text-white" placeholder="الوصف">
+                        <button onclick="Actions.addHealth()" class="w-full bg-red-500 text-white py-2 rounded-xl font-bold">حفظ السجل</button>
+                    </div>
+                    <div class="space-y-2">${logs.slice().reverse().map(l => `<div class="bg-white dark:bg-darkcard p-4 rounded-xl shadow-sm border-r-4 ${l.type === 'vaccine' ? 'border-red-500' : 'border-blue-500'}"><div class="flex justify-between"><div><h4 class="font-bold text-sm dark:text-white">${l.name}</h4><p class="text-xs text-slate-400">${l.date}</p></div><span class="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded dark:bg-slate-700 dark:text-slate-300">${l.type === 'vaccine' ? 'لقاح' : 'علاج'}</span></div></div>`).join('')}</div>
+            </div>`;
+    },
+
+    renderReports: async function(c, h) {
+        h.innerText = 'التقارير';
+        c.innerHTML = `<div class="screen active space-y-4 text-center p-10">جاري العمل...</div>`;
+    },
+
+    renderSettings: async function(c, h) {
+        h.innerText = 'الإعدادات';
+        c.innerHTML = `
+            <div class="screen active space-y-4">
+                <div class="bg-white dark:bg-darkcard p-4 rounded-xl shadow-sm">
+                    <h3 class="font-bold mb-4 dark:text-white">إدارة البيانات</h3>
+                    <button onclick="DB.exportData()" class="w-full bg-blue-500 text-white py-3 rounded-xl font-bold mb-2">نسخ احتياطي</button>
+                    <div class="relative"><input type="file" id="restoreFile" class="hidden" onchange="Actions.restoreData(this)"><button onclick="document.getElementById('restoreFile').click()" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold">استرجاع بيانات</button></div>
+                </div>
+            </div>`;
+    },
+    
+    renderNewCycle: function(c, h) {
+        h.innerText = 'دورة جديدة';
+        c.innerHTML = `
+            <div class="screen active flex flex-col items-center justify-center h-full p-6">
+                <div class="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white mb-4 shadow-lg"><i class="fa-solid fa-plus text-4xl"></i></div>
+                <h2 class="text-2xl font-bold mb-4 text-white">دورة جديدة</h2>
+                <div class="w-full max-w-sm space-y-3">
+                    <input id="cycleName" type="text" class="w-full p-3 bg-slate-800 border rounded-xl outline-none text-white" placeholder="اسم الدورة">
+                    <select id="cycleBreed" class="w-full p-3 bg-slate-800 border rounded-xl outline-none text-white"><option>Ross 308</option><option>Cobb 500</option></select>
+                    <input id="cycleStart" type="date" class="w-full p-3 bg-slate-800 border rounded-xl outline-none text-white">
+                    <input id="cycleCount" type="number" class="w-full p-3 bg-slate-800 border rounded-xl outline-none text-white" placeholder="عدد الطيور">
+                    <input id="cyclePrice" type="number" class="w-full p-3 bg-slate-800 border rounded-xl outline-none text-white" placeholder="سعر الطائر">
+                    <button onclick="Actions.startNewCycle()" class="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg">حفظ وابدأ</button>
+                </div>
+            </div>`;
+    },
+
+    renderFlockDetails: async function(c, h, id) {
+        c.innerHTML = `<div class="screen active p-4 text-center">Loading...</div>`;
+    }
+};
+
+// --- 7. ACTIONS ---
+const Actions = {
+    saveDailyLog: async function() {
+        const cycleId = App.state.currentCycleId;
+        if(!cycleId) return alert("يرجى إنشاء دورة جديدة أولاً");
+        
+        const cycle = await DB.get('current_cycle', cycleId);
+        const age = Math.floor((new Date() - new Date(cycle.startDate)) / (1000 * 60 * 60 * 24));
+        const mortality = parseInt(document.getElementById('logMortality').value) || 0;
+        const feed = parseFloat(document.getElementById('logFeed').value) || 0;
+        const weight = parseInt(document.getElementById('logWeight').value) || 0;
+
+        if(mortality > 0) {
+            cycle.count -= mortality;
+            await DB.update('current_cycle', cycle);
+        }
+        if(weight > 0) {
+            cycle.weight = weight;
+            await DB.update('current_cycle', cycle);
+        }
+
+        await DB.add('daily_logs', { cycleId, age, mortality, feedKg: feed, waterL: 0, weight, date: new Date().toLocaleDateString() });
+        App.router('production');
+    },
+    addInventory: async function() { const name = prompt("اسم الصنف:"); if(name) { await DB.add('inventory', { name, qty: 0 }); App.router('inventory'); } },
+    addTransaction: async function() { const amt = document.getElementById('finAmount').value; if(amt) { await DB.add('financial', { amount: parseFloat(amt), desc: 'مصروف', type: 'expense' }); App.router('finance'); } },
+    addHealth: async function() { const n = document.getElementById('healthName').value; if(n) { await DB.add('health_records', { name: n, type: document.getElementById('hBtnVac').classList.contains('border-red-500')?'vaccine':'medicine' }); App.router('health'); } },
+    startNewCycle: async function() { const n = document.getElementById('cycleName').value; if(n) { await DB.add('current_cycle', { name, breed: document.getElementById('cycleBreed').value, startDate: document.getElementById('cycleStart').value, count: document.getElementById('cycleCount').value, chickPrice: document.getElementById('cyclePrice').value, status: 'active' }); App.startApp(); } },
+    restoreData: async function(i) { await DB.importData(i.files[0]); alert('تم الاسترجاع'); location.reload(); },
+    setHealthType: function(t) { const v = document.getElementById('hBtnVac'); const m = document.getElementById('hBtnMed'); if(t==='vaccine'){v.classList.add('border-red-500');m.classList.remove('border-blue-500');}else{m.classList.add('border-blue-500');v.classList.remove('border-red-500');} }
+};
+
+// --- 8. BOOTSTRAP ---
+document.addEventListener('DOMContentLoaded', () => { App.init(); });
